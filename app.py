@@ -25,7 +25,7 @@ def rows_to_df(rows):
 
     df = pd.DataFrame(rows[1:], columns=rows[0])
 
-    # Normalize headers for matching: lowercase, no spaces
+    # Normalize headers for matching
     df.columns = [col.strip().lower().replace(' ', '') for col in df.columns]
     mapping = {}
     for expected in expected_headers:
@@ -42,6 +42,12 @@ def rows_to_df(rows):
 
     new_df = pd.DataFrame(filtered_data)
 
+    # Debug print raw '#' column values
+    print("Raw # column values:", new_df['#'].tolist())
+
+    # Remove rows where '#' is empty or header label
+    new_df = new_df[(new_df['#'].str.strip() != '') & (new_df['#'].str.strip() != '#')]
+
     # Filter rows where '#' is numeric
     new_df = new_df[new_df['#'].apply(lambda x: str(x).strip().isdigit())]
 
@@ -49,7 +55,7 @@ def rows_to_df(rows):
     new_df['#'] = new_df['#'].astype(int)
     new_df = new_df.sort_values('#').reset_index(drop=True)
 
-    # Drop duplicates
+    # Drop duplicates if any
     new_df = new_df.drop_duplicates()
 
     return new_df
