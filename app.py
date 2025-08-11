@@ -30,11 +30,9 @@ def rows_to_df(rows):
     mapping = {}
     for expected in expected_headers:
         key = expected.lower().replace(' ', '')
-        # Find best match column in df.columns
         matched_cols = [c for c in df.columns if key in c or c in key]
         mapping[expected] = matched_cols[0] if matched_cols else None
 
-    # Build a new DataFrame with only expected columns in order, or empty if missing
     filtered_data = {}
     for col in expected_headers:
         if mapping[col]:
@@ -43,6 +41,17 @@ def rows_to_df(rows):
             filtered_data[col] = [''] * len(df)
 
     new_df = pd.DataFrame(filtered_data)
+
+    # Filter rows where '#' is numeric
+    new_df = new_df[new_df['#'].apply(lambda x: str(x).strip().isdigit())]
+
+    # Convert '#' to int and sort ascending
+    new_df['#'] = new_df['#'].astype(int)
+    new_df = new_df.sort_values('#').reset_index(drop=True)
+
+    # Drop duplicates
+    new_df = new_df.drop_duplicates()
+
     return new_df
 
 def to_excel(df):
